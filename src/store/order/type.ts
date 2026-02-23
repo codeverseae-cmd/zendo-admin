@@ -15,6 +15,9 @@ export interface Order {
   total: number
   paymentStatus: string
   orderStatus: string
+  checkoutUrl?: string;
+  paymentLinkStatus: "none" | "active" | "used" | "expired";
+  paymentLinkExpiresAt?: string;
   createdAt: string
   updatedAt: string
   __v: number

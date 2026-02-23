@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { fetchOrders, fetchSingleOrder, updateOrderStatus } from "./thunk";
+import { fetchOrders, fetchSingleOrder, updateOrderStatus, generatePaymentLink } from "./thunk";
 import { Order, Pagination } from "./type";
 
 interface OrderState {
@@ -52,6 +52,14 @@ const orderSlice = createSlice({
       })
 
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
+        if (state.single && state.single._id === action.payload._id) {
+          state.single = action.payload;
+        }
+        state.list = state.list.map((o: Order) =>
+          o._id === action.payload._id ? action.payload : o
+        );
+      })
+      .addCase(generatePaymentLink.fulfilled, (state, action) => {
         if (state.single && state.single._id === action.payload._id) {
           state.single = action.payload;
         }

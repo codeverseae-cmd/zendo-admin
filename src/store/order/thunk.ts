@@ -25,3 +25,11 @@ export const updateOrderStatus = createAsyncThunk(
     return res.data.data;
   }
 );
+
+export const generatePaymentLink = createAsyncThunk(
+  "orders/generatePaymentLink",
+  async (id: string) => {
+    const res = await api.post(`/order/${id}/payment-link`);
+    return res.data.data;
+  }
+);

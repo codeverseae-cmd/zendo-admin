@@ -4,19 +4,55 @@ import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { RootState } from "@/src/store";
-import { fetchSingleOrder, updateOrderStatus } from "@/src/store/order/thunk";
-import { ArrowLeft, User, CreditCard, ShoppingBag, MapPin, Calendar, Clock } from "lucide-react";
+import { fetchSingleOrder, updateOrderStatus, generatePaymentLink } from "@/src/store/order/thunk";
+import { ArrowLeft, User, CreditCard, ShoppingBag, MapPin, Calendar, Clock, Link, Send, RefreshCw, Copy, Check } from "lucide-react";
 import { cn } from "@/src/lib/utils";
+import { useState } from "react";
 
 export default function ViewOrderPage() {
   const { id } = useParams();
   const router = useRouter();
   const dispatch = useDispatch<any>();
   const { single, loading } = useSelector((s: RootState) => s.order);
+  const [copying, setCopying] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     dispatch(fetchSingleOrder(id as string));
   }, [dispatch, id]);
+
+  const handleGenerateLink = async () => {
+    setGenerating(true);
+    try {
+      await dispatch(generatePaymentLink(id as string)).unwrap();
+      dispatch(fetchSingleOrder(id as string));
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (single?.checkoutUrl) {
+      navigator.clipboard.writeText(single.checkoutUrl);
+      setCopying(true);
+      setTimeout(() => setCopying(false), 2000);
+    }
+  };
+
+  const handleShareLink = (type: 'whatsapp' | 'email') => {
+    if (!single?.checkoutUrl) return;
+
+    const message = `Payment link for your order #${single._id.slice(-6).toUpperCase()}: ${single.checkoutUrl}`;
+    if (type === 'whatsapp') {
+      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    } else {
+      window.location.href = `mailto:?subject=Order Payment Link&body=${encodeURIComponent(message)}`;
+    }
+  };
+
+  const isLinkExpired = single?.paymentLinkExpiresAt
+    ? new Date() > new Date(single.paymentLinkExpiresAt)
+    : false;
 
   if (loading || !single) {
     return (
@@ -150,36 +186,66 @@ export default function ViewOrderPage() {
             </div>
           </div>
 
-          {/* Payment Card */}
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8 border-dashed">
-            <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 mb-6">
-              <CreditCard className="w-4 h-4" />
-              Payment Status
-            </h3>
-            <div className="flex items-center justify-between mb-8">
-              <p className="text-sm font-black text-gray-900 uppercase">{single.paymentStatus}</p>
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            </div>
-
-            <div className="space-y-4">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Update Order Status</label>
-              <select
-                value={single.orderStatus}
-                onChange={(e) =>
-                  dispatch(updateOrderStatus({ id: single._id, status: e.target.value }))
-                }
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 font-bold text-sm text-gray-900 focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none appearance-none"
-              >
-                <option value="placed">Placed</option>
-                <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Payment Link Actions */}
+      {single.paymentStatus !== "paid" && (
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
+          <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
+            <Link className="w-4 h-4" />
+            Payment Link
+          </h3>
+
+          {(single.paymentLinkStatus === "none" || isLinkExpired || single.paymentLinkStatus === "used" || single.paymentLinkStatus === "expired") ? (
+            <button
+              onClick={handleGenerateLink}
+              disabled={generating}
+              className="w-full bg-black text-white rounded-2xl p-4 font-bold text-sm hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {generating ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
+              {single.paymentLinkStatus === "none" ? "Generate Payment Link" : "Generate New Link"}
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopyLink}
+                  className="flex-1 bg-gray-50 border border-gray-100 text-gray-900 rounded-2xl p-4 font-bold text-sm hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
+                >
+                  {copying ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                  {copying ? "Copied!" : "Copy Link"}
+                </button>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => handleShareLink('whatsapp')}
+                    className="bg-green-50 text-green-600 border border-green-100 rounded-2xl p-4 hover:bg-green-100 transition-all"
+                    title="Share via WhatsApp"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleShareLink('email')}
+                    className="bg-blue-50 text-blue-600 border border-blue-100 rounded-2xl p-4 hover:bg-blue-100 transition-all"
+                    title="Share via Email"
+                  >
+                    <Send className="w-4 h-4 -rotate-45" />
+                  </button>
+                </div>
+              </div>
+              {single.paymentLinkExpiresAt && (
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">
+                  Expires: {new Date(single.paymentLinkExpiresAt).toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
