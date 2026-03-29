@@ -1,15 +1,15 @@
 import axios from "axios";
 
 export const UploadImage = async (file: File) => {
-    const presetKey = process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_KEY || "your_preset_key";
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "your_cloud_name";
+    const presetKey = process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_KEY || "zendo-ksa-admin";
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dglezipdf";
 
     console.log(file, "file", presetKey, cloudName);
 
-    if (!presetKey || !cloudName || presetKey === "your_preset_key") {
+    if (!presetKey || !cloudName) {
         console.error('Cloudinary preset key or cloud name is missing. Please set NEXT_PUBLIC_CLOUDINARY_PRESET_KEY and NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME in your .env file.');
+        return null;
     }
-    
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', presetKey);
