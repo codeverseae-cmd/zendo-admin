@@ -16,6 +16,7 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -36,6 +37,11 @@ export default function AdminLayout({
     }
   }, [isAuthenticated, pathname, router, mounted]);
 
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   if (!mounted) {
     return null;
   }
@@ -43,16 +49,26 @@ export default function AdminLayout({
   const isLoginPage = pathname === "/admin/login";
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-[#000000] text-white selection:bg-white selection:text-black">
       {!isLoginPage ? (
-        <div className="flex">
-          <Sidebar />
+        <div className="flex relative">
+          {/* Mobile overlay */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
 
-          <div className="flex-1 ml-64">
+          {/* Sidebar */}
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+          {/* Main content area */}
+          <div className="flex-1 lg:ml-64 min-h-screen flex flex-col">
             {/* Header */}
-            <Header />
+            <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
 
-            <main className="p-6">
+            <main className="flex-1 p-4 md:p-6 lg:p-8 animate-fade-in">
               {children}
             </main>
           </div>

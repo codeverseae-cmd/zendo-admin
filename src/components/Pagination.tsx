@@ -31,10 +31,10 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
             key={i}
             onClick={() => handlePageChange(p)}
             className={cn(
-              "w-10 h-10 rounded-xl font-bold transition-all border text-sm",
+              "w-10 h-10 rounded-xl font-semibold transition-all border text-sm",
               isActive
-                ? "bg-black text-white border-black shadow-lg shadow-black/10 scale-110"
-                : "bg-white text-gray-400 border-gray-100 hover:border-gray-300 hover:text-black"
+                ? "bg-white text-black border-white scale-110"
+                : "bg-[#0F0F0F] text-[#555555] border-[#222222] hover:border-[#444444] hover:text-white"
             )}
           >
             {p}
@@ -44,4 +44,3 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
     </div>
   );
 }
-

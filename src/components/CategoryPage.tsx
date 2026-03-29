@@ -30,15 +30,15 @@ export default function CategoryPage() {
     : data;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
       {/* Search & Add Category */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative w-full md:w-96 group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555555] group-focus-within:text-white transition-colors" />
           <input
             type="text"
             placeholder="Search categories..."
-            className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all shadow-sm"
+            className="w-full pl-10 pr-4 py-3 bg-[#0F0F0F] border border-[#222222] rounded-xl text-sm text-white placeholder:text-[#555555] focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-[#444444] transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -46,51 +46,51 @@ export default function CategoryPage() {
 
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-2xl font-semibold hover:bg-gray-800 transition-all shadow-lg shadow-black/10 active:scale-95 whitespace-nowrap"
+          className="flex items-center justify-center gap-2 bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-all active:scale-95 whitespace-nowrap text-sm"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4" />
           Add New Category
         </button>
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-[#0F0F0F] rounded-2xl border border-[#222222] overflow-hidden">
         {loading ? (
           <div className="p-20 flex flex-col items-center justify-center gap-4">
-            <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin" />
-            <p className="text-gray-500 font-medium">Fetching categories...</p>
+            <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <p className="text-[#555555] font-medium text-sm">Fetching categories...</p>
           </div>
         ) : filteredData.length === 0 ? (
           <div className="p-20 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-              <Layers className="w-8 h-8 text-gray-300" />
+            <div className="w-16 h-16 bg-[#1A1A1A] rounded-2xl flex items-center justify-center mb-4 border border-[#222222]">
+              <Layers className="w-8 h-8 text-[#555555]" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">No categories found</h3>
-            <p className="text-gray-500 max-w-xs mt-2">Try adjusting your search or add a new category to get started.</p>
+            <h3 className="text-lg font-semibold text-white">No categories found</h3>
+            <p className="text-[#555555] max-w-xs mt-2 text-sm">Try adjusting your search or add a new category to get started.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left responsive-table">
               <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">English Name</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Arabic Name</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                <tr className="border-b border-[#222222]">
+                  <th className="px-6 py-4 text-[0.6875rem] font-semibold text-[#555555] uppercase tracking-wider">English Name</th>
+                  <th className="px-6 py-4 text-[0.6875rem] font-semibold text-[#555555] uppercase tracking-wider text-right">Arabic Name</th>
+                  <th className="px-6 py-4 text-[0.6875rem] font-semibold text-[#555555] uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-[#1A1A1A]">
                 {filteredData.map((cat) => (
-                  <tr key={cat._id} className="hover:bg-gray-50/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <span className="font-bold text-gray-900">{cat.name.en}</span>
+                  <tr key={cat._id} className="hover:bg-[#1A1A1A] transition-colors group">
+                    <td className="px-6 py-4" data-label="English">
+                      <span className="font-semibold text-white text-sm">{cat.name.en}</span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-sm font-medium text-gray-500" dir="rtl">{cat.name.ar}</span>
+                    <td className="px-6 py-4 text-right" data-label="Arabic">
+                      <span className="text-sm font-medium text-[#888888] font-arabic" dir="rtl">{cat.name.ar}</span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="px-6 py-4 text-right" data-label="Actions">
+                      <div className="flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
-                          className="p-2.5 text-gray-400 hover:text-black hover:bg-white border border-transparent hover:border-gray-200 rounded-xl transition-all"
+                          className="p-2.5 text-[#555555] hover:text-white hover:bg-[#1A1A1A] border border-transparent hover:border-[#222222] rounded-xl transition-all"
                           onClick={() => {
                             setEditData(cat);
                             setShowForm(true);
@@ -99,7 +99,7 @@ export default function CategoryPage() {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-white border border-transparent hover:border-gray-200 rounded-xl transition-all"
+                          className="p-2.5 text-[#555555] hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-xl transition-all"
                           onClick={() => cat._id && dispatch(deleteCategory(cat._id))}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -126,4 +126,3 @@ export default function CategoryPage() {
     </div>
   );
 }
-

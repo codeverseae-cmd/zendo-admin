@@ -1,10 +1,14 @@
 "use client";
 
-import { Bell, Search, User, ChevronDown } from "lucide-react";
+import { Bell, Search, User, ChevronDown, Menu } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 
-export default function Header() {
+interface HeaderProps {
+  onMenuToggle: () => void;
+}
+
+export default function Header({ onMenuToggle }: HeaderProps) {
   const [selectedPeriod, setSelectedPeriod] = useState("Today");
   const pathname = usePathname();
 
@@ -19,51 +23,64 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 transition-all duration-200">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between h-20">
-          {/* Left: Title */}
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-              {getTitle()}
-            </h1>
-            <p className="text-xs text-gray-500 font-medium">Welcome back, Admin</p>
+    <header className="glass border-b border-[#222222] sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 md:h-20">
+          {/* Left: Hamburger + Title */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onMenuToggle}
+              className="lg:hidden p-2 text-[#888888] hover:text-white hover:bg-[#1A1A1A] rounded-xl transition-all"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-xl md:text-2xl font-semibold text-white tracking-tight">
+                {getTitle()}
+              </h1>
+              <p className="text-[0.6875rem] text-[#555555] font-medium hidden md:block">Welcome back, Admin</p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 md:gap-6">
             {/* Search */}
             <div className="relative hidden lg:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555555]" />
               <input
                 type="text"
                 placeholder="Search anything..."
-                className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all w-72"
+                className="pl-10 pr-4 py-2.5 bg-[#0F0F0F] border border-[#222222] rounded-xl text-sm text-white placeholder:text-[#555555] focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-[#444444] transition-all w-64 xl:w-72"
               />
             </div>
 
-            <div className="flex items-center gap-4">
-              {/* Notifications */}
-              <button className="relative p-2.5 text-gray-500 hover:text-black hover:bg-gray-50 rounded-xl transition-all">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full" />
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* Search icon (mobile) */}
+              <button className="lg:hidden p-2.5 text-[#555555] hover:text-white hover:bg-[#1A1A1A] rounded-xl transition-all">
+                <Search className="w-5 h-5" />
               </button>
 
-              <div className="h-8 w-px bg-gray-100 mx-2" />
+              {/* Notifications */}
+              <button className="relative p-2.5 text-[#555555] hover:text-white hover:bg-[#1A1A1A] rounded-xl transition-all">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-white rounded-full" />
+              </button>
+
+              <div className="h-8 w-px bg-[#222222] mx-1 hidden md:block" />
 
               {/* Profile */}
-              <button className="flex items-center gap-3 hover:bg-gray-50 p-1.5 rounded-xl transition-all group">
-                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-black/10">
-                  <User className="w-5 h-5" />
+              <button className="flex items-center gap-3 hover:bg-[#1A1A1A] p-1.5 rounded-xl transition-all group">
+                <div className="w-9 h-9 md:w-10 md:h-10 bg-white rounded-xl flex items-center justify-center text-black font-bold">
+                  <User className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-semibold text-gray-900 group-hover:text-black">
+                  <p className="text-sm font-semibold text-white group-hover:text-white">
                     Admin User
                   </p>
-                  <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                  <p className="text-[0.625rem] font-medium text-[#555555] uppercase tracking-wider">
                     Super Admin
                   </p>
                 </div>
-                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-black transition-colors" />
+                <ChevronDown className="w-4 h-4 text-[#555555] group-hover:text-white transition-colors hidden md:block" />
               </button>
             </div>
           </div>

@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import { cleanProductData } from "../utils/cleanProductData";
 import { UploadImage } from "../utils/uploadImage";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 
 const COLORS = [
   { label: "Green", value: "green" },
@@ -20,6 +20,7 @@ const COLORS = [
 export default function ProductFormModal({ close, editData }: any) {
   const dispatch = useAppDispatch();
   const [isUploading, setIsUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
 
   const { data: categories } = useSelector((s: RootState) => s.category);
   const { data: brands } = useSelector((s: RootState) => s.brand);
@@ -53,6 +54,9 @@ export default function ProductFormModal({ close, editData }: any) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreview(objectUrl);
+
     setIsUploading(true);
     const imageUrl = await UploadImage(file);
     if (imageUrl) {
@@ -62,44 +66,54 @@ export default function ProductFormModal({ close, editData }: any) {
   };
 
   const handleSubmit = () => {
+    const cleanedData = cleanProductData(form);
     if (editData) {
       dispatch(
-        updateProduct({ id: editData._id, data: cleanProductData(form) })
+        updateProduct({ id: editData._id, data: cleanedData })
       );
     } else {
-      dispatch(createProduct(form));
+      dispatch(createProduct(cleanedData));
     }
     close();
   };
 
+  const inputClasses = "w-full border border-[#222222] rounded-lg p-3 bg-[#0F0F0F] text-white placeholder:text-[#555555] focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-[#444444] transition-all text-sm";
+  const labelClasses = "font-medium text-sm text-[#888888] block mb-1.5";
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white text-gray-900 border border-gray-100 p-6 w-full max-w-[500px] max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl space-y-4">
-        <h2 className="text-2xl font-bold mb-4">
-          {editData ? "Edit Product" : "Add Product"}
-        </h2>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-[#0F0F0F] text-white border border-[#222222] p-6 md:p-8 w-full max-w-[500px] max-h-[90vh] overflow-y-auto rounded-2xl space-y-5 animate-fade-in-scale">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">
+            {editData ? "Edit Product" : "Add Product"}
+          </h2>
+          <button onClick={close} className="p-2 text-[#555555] hover:text-white hover:bg-[#1A1A1A] rounded-lg transition-all">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* IMAGE UPLOAD */}
         <div>
-          <label className="font-semibold block mb-2">Product Image</label>
+          <label className={labelClasses}>Product Image</label>
           <div className="flex items-center gap-4">
-            {form.image && (
-              <div className="relative w-20 h-20 border rounded-lg overflow-hidden shrink-0">
+            {(form.image || localPreview) && (
+              <div className="relative w-20 h-20 border border-[#222222] rounded-xl overflow-hidden shrink-0 bg-[#0F0F0F]">
                 <img
-                  src={form.image}
+                  src={localPreview || form.image}
                   alt="Preview"
                   className="w-full h-full object-contain"
                 />
               </div>
             )}
-            <label className="flex-1 border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors">
+            <label className="flex-1 border border-dashed border-[#333333] rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-white/40 transition-colors bg-[#0A0A0A]">
               {isUploading ? (
-                <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                <Loader2 className="w-6 h-6 animate-spin text-white" />
               ) : (
                 <>
-                  <Upload className="w-6 h-6 text-gray-400" />
-                  <span className="text-sm text-gray-500 mt-1">
-                    Click to upload image
+                  <Upload className="w-6 h-6 text-[#555555]" />
+                  <span className="text-xs text-[#555555] mt-1.5 font-medium">
+                    Click to upload image (JPG, PNG, WEBP)
                   </span>
                 </>
               )}
@@ -117,9 +131,9 @@ export default function ProductFormModal({ close, editData }: any) {
         {/* NAME */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="font-semibold block mb-1">Name (English)</label>
+            <label className={labelClasses}>Name (English)</label>
             <input
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               placeholder="e.g., Fresh Orange Juice"
               value={form.name.en}
               onChange={(e) =>
@@ -129,9 +143,9 @@ export default function ProductFormModal({ close, editData }: any) {
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">Name (Arabic)</label>
+            <label className={labelClasses}>Name (Arabic)</label>
             <input
-              className="w-full border rounded-lg p-2 bg-transparent text-right text-gray-900"
+              className={`${inputClasses} text-right`}
               placeholder="e.g., عصير برتقال طازج"
               dir="rtl"
               value={form.name.ar}
@@ -145,9 +159,9 @@ export default function ProductFormModal({ close, editData }: any) {
         {/* CATEGORY & BRAND */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="font-semibold block mb-1">Category</label>
+            <label className={labelClasses}>Category</label>
             <select
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               value={form.categoryId}
               onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
             >
@@ -161,9 +175,9 @@ export default function ProductFormModal({ close, editData }: any) {
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">Brand</label>
+            <label className={labelClasses}>Brand</label>
             <select
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               value={form.brandId}
               onChange={(e) => setForm({ ...form, brandId: e.target.value })}
             >
@@ -180,10 +194,10 @@ export default function ProductFormModal({ close, editData }: any) {
         {/* PRICE */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="font-semibold block mb-1">Price (SAR)</label>
+            <label className={labelClasses}>Price (SAR)</label>
             <input
               type="number"
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               placeholder="0.00"
               value={form.price}
               onChange={(e) =>
@@ -193,10 +207,10 @@ export default function ProductFormModal({ close, editData }: any) {
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">Original Price</label>
+            <label className={labelClasses}>Original Price</label>
             <input
               type="number"
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               placeholder="0.00"
               value={form.originalPrice}
               onChange={(e) =>
@@ -209,9 +223,9 @@ export default function ProductFormModal({ close, editData }: any) {
         {/* DISCOUNT */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="font-semibold block mb-1">Discount</label>
+            <label className={labelClasses}>Discount</label>
             <input
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               placeholder="e.g., 20%"
               value={form.discount}
               onChange={(e) => setForm({ ...form, discount: e.target.value })}
@@ -219,9 +233,9 @@ export default function ProductFormModal({ close, editData }: any) {
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">Discount Color</label>
+            <label className={labelClasses}>Discount Color</label>
             <select
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               value={form.discountColor}
               onChange={(e) =>
                 setForm({ ...form, discountColor: e.target.value })
@@ -240,9 +254,9 @@ export default function ProductFormModal({ close, editData }: any) {
         {/* BADGE */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="font-semibold block mb-1">Badge Text</label>
+            <label className={labelClasses}>Badge Text</label>
             <input
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               placeholder="e.g., Best Seller"
               value={form.badge}
               onChange={(e) => setForm({ ...form, badge: e.target.value })}
@@ -250,9 +264,9 @@ export default function ProductFormModal({ close, editData }: any) {
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">Badge Color</label>
+            <label className={labelClasses}>Badge Color</label>
             <select
-              className="w-full border rounded-lg p-2 bg-transparent text-gray-900"
+              className={inputClasses}
               value={form.badgeColor}
               onChange={(e) => setForm({ ...form, badgeColor: e.target.value })}
             >
@@ -267,16 +281,16 @@ export default function ProductFormModal({ close, editData }: any) {
         </div>
 
         {/* SAVE BUTTON */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        <div className="flex justify-end gap-3 pt-5 border-t border-[#222222]">
           <button
-            className="px-6 py-2 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="px-6 py-2.5 rounded-xl border border-[#222222] text-[#888888] hover:text-white hover:bg-[#1A1A1A] transition-all text-sm font-medium"
             onClick={close}
           >
             Cancel
           </button>
           <button
             disabled={isUploading}
-            className="px-6 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
             onClick={handleSubmit}
           >
             {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -287,4 +301,3 @@ export default function ProductFormModal({ close, editData }: any) {
     </div>
   );
 }
-
